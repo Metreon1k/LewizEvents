@@ -1,0 +1,73 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.guardsquare:proguard-gradle:7.6.1'
+    }
+}
+
+plugins {
+    id 'fabric-loom' version '1.9-SNAPSHOT'
+    id 'maven-publish'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+repositories {
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+}
+
+processResources {
+    inputs.property "version", project.version
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.release = 21
+    it.options.encoding = 'UTF-8'
+}
+
+java {
+    withSourcesJar()
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+// Обфускация обычного jar'а (после ремапа на обычные имена Minecraft).
+// Отдельная задача, собранный jar не заменяет remapJar, а лежит рядом:
+// build/libs/lewizevents-<version>-obfuscated.jar
+tasks.register('proguardJar', proguard.gradle.ProGuardTask) {
+    dependsOn tasks.remapJar
+    group = 'build'
+    description = 'Обфусцирует remapJar через ProGuard'
+
+    injars tasks.remapJar.archiveFile
+    outjars layout.buildDirectory.file("libs/${base.archivesName.get()}-${project.version}-obfuscated.jar")
+
+    libraryjars "${System.getProperty('java.home')}/jmods"
+    doFirst {
+        sourceSets.main.compileClasspath.files.each { f ->
+            if (f.exists()) libraryjars f
+        }
+    }
+
+    configuration file('proguard-rules.pro')
+}
+
+tasks.named('build') {
+    dependsOn tasks.proguardJar
+}

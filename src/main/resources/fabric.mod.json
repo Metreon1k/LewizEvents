@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "lewizevents",
+  "version": "${version}",
+  "name": "LewizEvents",
+  "icon": "assets/lewizevents/icon.png",
+  "description": "Показывает события на всех анархиях HolyWorld и позволяет быстро перейти на нужную анархию.",
+  "authors": ["LewizDev"],
+  "contact": {
+    "homepage": "https://t.me/LewizDev"
+  },
+  "license": "All-Rights-Reserved",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["dev.lewiz.events.LewizEventsClient"]
+  },
+  "depends": {
+    "fabricloader": ">=0.16.9",
+    "minecraft": "~1.21.4",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}
